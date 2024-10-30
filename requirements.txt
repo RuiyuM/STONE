@@ -8,3 +8,6 @@ scikit-image
 tqdm
 torchvision
 SharedArray
+apricot
+wandb
+

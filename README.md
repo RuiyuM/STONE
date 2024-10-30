@@ -1,35 +1,4 @@
 
-
-<p align="center">
-  <img height="150" src="./miscellaneous/active-3d-logo.png" />
-</p>
-
------------------------
-
-
-This repository is the official Pytorch implementation of our work:
-
-\[ICLR 2023\] **CRB: Exploring Active 3D Object Detection from a Generalization Perspective**. 
-
-[[OpenReview]](https://openreview.net/forum?id=2RwXVje1rAh) [[arXiv]](https://arxiv.org/abs/2301.09249) [[Supplementary Material]](https://openreview.net/attachment?id=2RwXVje1rAh&name=supplementary_material)
-
-\[In Submission\] **Open-CRB: Towards Open World Active Learning for 3D Object Detection**.
-
-[[Open-CRB Branch]](https://github.com/Luoyadan/CRB-active-3Ddet/tree/Open-CRB) [[arXiv]](https://arxiv.org/abs/2310.10391) 
-
-:fire: 11/23 updates: release the code and the preprint of **Open-CRB**
-
-:fire: 02/23 updates: checkpoints available at https://drive.google.com/drive/folders/1PMb6tu84AIw66vCRrMBCHpnBeL5WMkuv?usp=sharing
-
-## Framework
-To alleviate the high annotation cost in LiDAR-based 3D object detection, active learning is a promising solution that learns to select only a small portion of unlabeled data to annotate, without compromising model performance. Our empirical study, however, suggests that mainstream uncertainty-based and diversity-based active learning policies are not effective when applied in the 3D detection task, as they fail to balance the trade-off between point cloud informativeness and box-level annotation costs. To overcome this limitation, we jointly investigate three novel criteria in our framework **CRB** for point cloud acquisition - label conciseness, feature representativeness and geometric balance, which hierarchically filters out the point clouds of redundant 3D bounding box labels, latent features and geometric characteristics (e.g., point cloud density) from the unlabeled sample pool and greedily selects informative ones with fewer objects to annotate. Our theoretical analysis demonstrates that the proposed criteria aligns the marginal distributions of the selected subset and the prior distributions of the unseen test set, and minimizes the upper bound of the generalization error. To validate the effectiveness and applicability of CRB, we conduct extensive experiments on the two benchmark 3D object detection datasets of KITTI and Waymo and examine both one-stage (i.e., SECOND) and two-stage 3D detectors (i.e., PV-RCNN). Experiments evidence that the proposed approach outperforms existing active learning strategies and achieves fully supervised performance requiring 1\% and 8\% annotations of bounding boxes and point clouds, respectively.
-
-<p align="center">
-<img src="miscellaneous/flowchart.png" width="70%">
-</p>
-
-
-
 ----
 ## Contents
 * [Installation](#Installation)
@@ -63,9 +32,6 @@ python setup.py develop
 > NOTE: Please re-install even if you have already installed pcdet previoursly.
 
 
-# Getting Started
-The **active learning configs** are located at [tools/cfgs/active-kitti_models](./tools/cfgs/active-kitti_models) and [/tools/cfgs/active-waymo_models](./tools/cfgs/active-waymo_models) for different AL methods. The dataset configs are located within [tools/cfgs/dataset_configs](./tools/cfgs/dataset_configs), 
-and the model configs are located within [tools/cfgs](./tools/cfgs) for different datasets. 
 
 
 ## Dataset Preparation
@@ -77,7 +43,7 @@ Currently we provide the dataloader of KITTI dataset and Waymo dataset, and the 
 * NOTE: if you already have the data infos from `pcdet v0.1`, you can choose to use the old infos and set the DATABASE_WITH_FAKELIDAR option in tools/cfgs/dataset_configs/kitti_dataset.yaml as True. The second choice is that you can create the infos and gt database again and leave the config unchanged.
 
 ```
-CRB-active-3Ddet
+STONE-Active-3D-Detection
 ├── data
 │   ├── kitti
 │   │   │── ImageSets
@@ -98,7 +64,7 @@ python -m pcdet.datasets.kitti.kitti_dataset create_kitti_infos tools/cfgs/datas
 * Please download the official [NuScenes 3D object detection dataset](https://www.nuscenes.org/download) and 
 organize the downloaded files as follows: 
 ```
-CRB-active-3Ddet
+STONE-Active-3D-Detection
 ├── data
 │   ├── nuscenes
 │   │   │── v1.0-trainval (or v1.0-mini if you use mini)
@@ -128,7 +94,7 @@ including the training data `training_0000.tar~training_0031.tar` and the valida
 data `validation_0000.tar~validation_0007.tar`.
 * Unzip all the above `xxxx.tar` files to the directory of `data/waymo/raw_data` as follows (You could get 798 *train* tfrecord and 202 *val* tfrecord ):  
 ```
-CRB-active-3Ddet
+STONE-Active-3D-Detection
 ├── data
 │   ├── waymo
 │   │   │── ImageSets
@@ -151,7 +117,6 @@ CRB-active-3Ddet
 pip3 install --upgrade pip
 pip3 install waymo-open-dataset-tf-2-0-0==1.2.0 --user
 ```
-> Waymo version in our project is 1.2.0
 
 * Extract point cloud data from tfrecord and generate data infos by running the following command (it takes several hours, 
 and you could refer to `data/waymo/waymo_processed_data_v0_5_0` to see how many records that have been processed): 
@@ -162,12 +127,34 @@ python -m pcdet.datasets.waymo.waymo_dataset --func create_waymo_infos \
 
 Note that you do not need to install `waymo-open-dataset` if you have already processed the data before and do not need to evaluate with official Waymo Metrics. 
 
+### Train a backbone
+
+```shell script
+sh scripts/${DATASET}/train_${DATASET}_backbone.sh
+```
+
+
+### Train with different active learning strategies
+- STONE sampling [`STONE`]
+- random selection [`random`]
+- confidence sample [`confidence`]
+- entropy sampling [`entropy`]
+- MC-Reg sampling [`montecarlo`]
+- greedy coreset [`coreset`]
+- learning loss [`llal`]
+- BADGE sampling [`badge`]
+- CRB sampling [`crb`]
+
+* Train:
+```shell script
+python train.py --cfg_file ${CONFIG_FILE}
+```
 <!-- 
 ### Lyft Dataset
 * Please download the official [Lyft Level5 perception dataset](https://level-5.global/data/perception) and 
 organize the downloaded files as follows: 
 ```
-CRB-active-3Ddet
+STONE-Active-3D-Detection
 ├── data
 │   ├── lyft
 │   │   │── ImageSets
@@ -177,18 +164,10 @@ CRB-active-3Ddet
 ├── tools
 ```
 
-* Install the `lyft-dataset-sdk` with version `0.0.8` by running the following command: 
-```shell script
-pip install -U lyft_dataset_sdk==0.0.8
-```
 
-* Generate the data infos by running the following command (it may take several hours): 
-```python 
-python -m pcdet.datasets.lyft.lyft_dataset --func create_lyft_infos \
-    --cfg_file tools/cfgs/dataset_configs/lyft_dataset.yaml
-```
 
-* You need to check carefully since we don't provide a benchmark for it. -->
+
+
 
 
 
@@ -197,7 +176,7 @@ python -m pcdet.datasets.lyft.lyft_dataset --func create_lyft_infos \
 
 
 ### Test and evaluate the pretrained models
-The weights of our pre-trained model will be released upon acceptance.
+
 
 * Test with a pretrained model: 
 ```shell script
@@ -221,7 +200,6 @@ sh scripts/slurm_test_mgpu.sh ${PARTITION} ${NUM_GPUS} \
 ```
 
 ### Train a backbone
-In our active learning setting, the 3D detector will be pre-trained with a small labeled set $\mathcal{D}_L$ which is randomly sampled from the trainig set. To train such a backbone, please run
 
 ```shell script
 sh scripts/${DATASET}/train_${DATASET}_backbone.sh
@@ -229,7 +207,7 @@ sh scripts/${DATASET}/train_${DATASET}_backbone.sh
 
 
 ### Train with different active learning strategies
-We provide several options for active learning algorithms, including
+- STONE sampling [`STONE`]
 - random selection [`random`]
 - confidence sample [`confidence`]
 - entropy sampling [`entropy`]
@@ -240,7 +218,8 @@ We provide several options for active learning algorithms, including
 - CRB sampling [`crb`]
 
 
-You could optionally add extra command line parameters `--batch_size ${BATCH_SIZE}` and `--epochs ${EPOCHS}` to specify your preferred parameters. 
+
+
 
 * Train:
 ```shell script

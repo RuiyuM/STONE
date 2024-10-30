@@ -8,6 +8,7 @@ from .llal_sampling import LLALSampling
 from .montecarlo_sampling import MonteCarloSampling
 from .confidence_sampling import ConfidenceSampling
 from .crb_sampling import CRBSampling
+from .STONE_sampling import STONE_Sampling_active
 
 __factory = {
     'random': RandomSampling,
@@ -17,7 +18,8 @@ __factory = {
     'llal': LLALSampling,
     'montecarlo': MonteCarloSampling,
     'confidence': ConfidenceSampling,
-    'crb': CRBSampling
+    'crb': CRBSampling,
+    'STONE': STONE_Sampling_active,
 }
 
 def names():
